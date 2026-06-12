@@ -1,3 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Mesa Facil</string>
+    <string name="app_name">Mesa Fácil</string>
+    <string name="comanda_digital">Comanda Digital</string>
+    
+    <!-- Login -->
+    <string name="email">Email</string>
+    <string name="senha">Senha</string>
+    <string name="entrar">Entrar</string>
+    <string name="sair">Sair</string>
+    
+    <!-- Mesas -->
+    <string name="mesas">Mesas</string>
+    <string name="mesa">Mesa</string>
+    <string name="livre">Livre</string>
+    <string name="ocupada">Ocupada</string>
+    <string name="reservada">Reservada</string>
+    <string name="abrir_mesa">Abrir Mesa</string>
+    <string name="quantas_pessoas">Quantas pessoas?</string>
+    <string name="unir_mesas">Unir Mesas</string>
+    <string name="fechar_mesa">Fechar Mesa</string>
+    
+    <!-- Pedidos -->
+    <string name="pedidos">Pedidos</string>
+    <string name="novo_pedido">Novo Pedido</string>
+    <string name="adicionais">Adicionais</string>
+    <string name="observacoes">Observações</string>
+    <string name="enviar_pedido">Enviar para Cozinha</string>
+    <string name="lanches">Lanches</string>
+    <string name="bebidas">Bebidas</string>
+    <string name="sobremesas">Sobremesas</string>
+    
+    <!-- Pagamento -->
+    <string name="pagamento">Pagamento</string>
+    <string name="total">Total</string>
+    <string name="valor_total">Valor Total</string>
+    <string name="valor_pago">Valor Pago</string>
+    <string name="valor_restante">Valor Restante</string>
+    <string name="troco">Troco</string>
+    <string name="dinheiro">Dinheiro</string>
+    <string name="pix">PIX</string>
+    <string name="cartao_debito">Cartão de Débito</string>
+    <string name="cartao_credito">Cartão de Crédito</string>
+    <string name="forma_pagamento">Forma de Pagamento</string>
+    <string name="adicionar_pagamento">Adicionar Pagamento</string>
+    <string name="valor_pessoa">Valor por Pessoa</string>
+    <string name="pessoas">Pessoas</string>
+    <string name="pagantes">Pagantes</string>
+    
+    <!-- Status -->
+    <string name="novo">Novo</string>
+    <string name="em_preparo">Em Preparo</string>
+    <string name="pronto">Pronto</string>
+    <string name="entregue">Entregue</string>
+    <string name="cancelado">Cancelado</string>
+    
+    <!-- Erros -->
+    <string name="erro_login">Erro ao fazer login</string>
+    <string name="erro_desconhecido">Erro desconhecido</string>
+    <string name="erro_conexao">Erro de conexão</string>
+    
+    <!-- Ações -->
+    <string name="confirmar">Confirmar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="voltar">Voltar</string>
+    <string name="salvar">Salvar</string>
+    <string name="deletar">Deletar</string>
+    <string name="editar">Editar</string>
+    <string name="limpar">Limpar</string>
 </resources>
