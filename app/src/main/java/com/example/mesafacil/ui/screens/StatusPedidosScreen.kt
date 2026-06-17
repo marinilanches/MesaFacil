@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,7 +15,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mesafacil.data.models.Pedido
 import com.example.mesafacil.data.models.PedidoStatus
+import java.text.SimpleDateFormat
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusPedidosScreen(
     numeroMesa: Int,
@@ -78,7 +82,10 @@ fun PedidoCard(
                         fontSize = 14.sp
                     )
                     Text(
-                        text = java.text.SimpleDateFormat("HH:mm").format(pedido.createdAt),
+                        text = SimpleDateFormat(
+                            "HH:mm",
+                            Locale.getDefault()
+                        ).format(Date(pedido.createdAt)),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -105,7 +112,7 @@ fun PedidoCard(
                     )
                     if (item.adicionais.isNotEmpty()) {
                         Text(
-                            text = "  + ${item.adicionais.map { it.nome }.joinToString(", ")}",
+                            text = item.adicionais.joinToString(", "),
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

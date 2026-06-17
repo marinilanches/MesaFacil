@@ -1,177 +1,157 @@
 package com.example.mesafacil.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mesafacil.data.models.Adicional
-import com.example.mesafacil.data.models.ItemPedido
-import com.example.mesafacil.data.models.Mesa
-import com.example.mesafacil.data.models.MenuItem
-import com.example.mesafacil.data.models.Pedido
+import com.example.mesafacil.data.models.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PedidoScreen(
     mesa: Mesa,
     pedidos: List<Pedido>,
     menuItems: List<MenuItem>,
     adicionais: List<Adicional>,
-    onAdicionarItem: (item: ItemPedido) -> Unit,
-    onEnviarPedido: (itens: List<ItemPedido>, observacoes: String) -> Unit,
+    onAdicionarItem: (ItemPedido) -> Unit,
+    onEnviarPedido: (List<ItemPedido>, String) -> Unit,
     onVoltar: () -> Unit
 ) {
     var selectedCategory by remember { mutableStateOf("Lanches") }
-    var itensSelecionados by remember { mutableStateOf<List<ItemPedido>>(emptyList()) }
+    var itensSelecionados by remember { mutableStateOf(listOf<ItemPedido>()) }
     var observacoes by remember { mutableStateOf("") }
-    var showAdicionaisDialog by remember { mutableStateOf(false) }
     var itemSelecionado by remember { mutableStateOf<MenuItem?>(null) }
-    var itemAdicionaisSelected by remember { mutableStateOf<List<Adicional>>(emptyList()) }
+    var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mesa ${mesa.numero} - Pedidos") },
+                title = { Text("Mesa ${mesa.numero}") },
                 navigationIcon = {
                     IconButton(onClick = onVoltar) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
+                        Icon(Icons.Default.Delete, contentDescription = null)
                     }
                 }
             )
         }
-    ) { paddingValues ->
+    ) { padding ->
+
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
         ) {
-            // Menu
+
+            // MENU
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .padding(8.dp)
             ) {
-                // Categorias
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(0.15f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(listOf("Lanches", "Bebidas", "Sobremesas")) { category ->
+
+                val categories = listOf("Lanches", "Bebidas", "Sobremesas")
+
+                LazyColumn {
+                    items(categories) { cat ->
                         Button(
-                            onClick = { selectedCategory = category },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (selectedCategory == category)
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.surface
-                            )
+                            onClick = { selectedCategory = cat },
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(category)
+                            Text(cat)
                         }
                     }
                 }
 
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-                // Items da categoria
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                LazyColumn {
                     items(menuItems.filter { it.categoria == selectedCategory }) { item ->
-                        MenuItemCard(
-                            item = item,
-                            onClick = {
-                                itemSelecionado = item
-                                showAdicionaisDialog = true
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                                .clickable {
+                                    itemSelecionado = item
+                                    showDialog = true
+                                }
+                        ) {
+                            Column(Modifier.padding(8.dp)) {
+                                Text(item.nome, fontWeight = FontWeight.Bold)
+                                Text("R$ ${item.valor}")
                             }
-                        )
+                        }
                     }
                 }
             }
 
-            Divider(modifier = Modifier
-                .fillMaxHeight()
-                .width(1.dp))
-
-            // Carrinho
+            // CARRINHO
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
                     .padding(8.dp)
             ) {
-                Text(
-                    text = "Itens Selecionados",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
 
-                // Items
+                Text("Carrinho", fontWeight = FontWeight.Bold)
+
                 LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
                     items(itensSelecionados) { item ->
-                        ItemCarrinho(
-                            item = item,
-                            onRemove = {
-                                itensSelecionados = itensSelecionados.filter { it.id != item.id }
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(item.nome)
+                                    Text("Qtd: ${item.quantidade}")
+                                }
+
+                                Text("R$ ${item.valorUnitario * item.quantidade}")
                             }
-                        )
+                        }
                     }
                 }
 
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-                // Total
                 Text(
-                    text = "Total: R$ ${String.format("%.2f", itensSelecionados.sumOf { it.valorTotal() })}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(8.dp)
+                    "Total: R$ ${
+                        itensSelecionados.sumOf { it.valorUnitario * it.quantidade }
+                    }",
+                    fontWeight = FontWeight.Bold
                 )
 
-                // Observacoes
                 OutlinedTextField(
                     value = observacoes,
                     onValueChange = { observacoes = it },
-                    label = { Text("Observações") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Observações") }
                 )
 
-                // Buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Row {
                     Button(
                         onClick = { itensSelecionados = emptyList() },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Limpar")
                     }
+
                     Button(
-                        onClick = { onEnviarPedido(itensSelecionados, observacoes) },
+                        onClick = {
+                            onEnviarPedido(itensSelecionados, observacoes)
+                        },
                         modifier = Modifier.weight(1f),
                         enabled = itensSelecionados.isNotEmpty()
                     ) {
@@ -182,25 +162,45 @@ fun PedidoScreen(
         }
     }
 
-    // Dialog de Adicionais
-    if (showAdicionaisDialog && itemSelecionado != null) {
-        AdicionaisDialog(
-            item = itemSelecionado!!,
-            adicionais = adicionais,
-            onDismiss = { showAdicionaisDialog = false },
-            onConfirm = { adicionaisSelecionados, observacao ->
-                val novoItem = ItemPedido(
-                    id = itemSelecionado!!.id + System.currentTimeMillis(),
-                    nome = itemSelecionado!!.nome,
-                    categoria = itemSelecionado!!.categoria,
-                    valorUnitario = itemSelecionado!!.valor,
-                    adicionais = adicionaisSelecionados,
-                    observacoes = observacao
-                )
-                itensSelecionados = itensSelecionados + novoItem
-                showAdicionaisDialog = false
-                itemSelecionado = null
-                itemAdicionaisSelected = emptyList()
+    // DIALOG
+    if (showDialog && itemSelecionado != null) {
+
+        var qtd by remember { mutableStateOf(1) }
+
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(itemSelecionado!!.nome) },
+            text = {
+                Column {
+                    Text("Quantidade")
+
+                    Row {
+                        Button(onClick = { if (qtd > 1) qtd-- }) { Text("-") }
+                        Text("$qtd", modifier = Modifier.padding(16.dp))
+                        Button(onClick = { qtd++ }) { Text("+") }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val item = ItemPedido(
+                        id = itemSelecionado!!.id,
+                        nome = itemSelecionado!!.nome,
+                        categoria = itemSelecionado!!.categoria,
+                        quantidade = qtd,
+                        valorUnitario = itemSelecionado!!.valor
+                    )
+
+                    itensSelecionados = itensSelecionados + item
+                    showDialog = false
+                }) {
+                    Text("Adicionar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancelar")
+                }
             }
         )
     }
@@ -255,7 +255,7 @@ fun ItemCarrinho(
                 )
                 if (item.adicionais.isNotEmpty()) {
                     Text(
-                        text = item.adicionais.map { it.nome }.joinToString(", "),
+                        text = item.adicionais.joinToString(", "),
                         fontSize = 12.sp
                     )
                 }

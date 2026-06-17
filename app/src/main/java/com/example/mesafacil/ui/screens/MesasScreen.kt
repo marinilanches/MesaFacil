@@ -2,9 +2,13 @@ package com.example.mesafacil.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,6 +21,10 @@ import androidx.compose.ui.unit.sp
 import com.example.mesafacil.data.models.Mesa
 import com.example.mesafacil.data.models.MesaStatus
 
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class
+)
 @Composable
 fun MesasScreen(
     mesas: List<Mesa>,
@@ -92,10 +100,12 @@ fun MesasScreen(
                             }
                         },
                         onLongClick = {
-                            selectedMesas = if (selectedMesas.contains(mesa)) {
-                                selectedMesas - mesa
-                            } else {
-                                selectedMesas + mesa
+                            if (mesa.status == MesaStatus.LIVRE) {
+                                selectedMesas = if (selectedMesas.contains(mesa)) {
+                                    selectedMesas - mesa
+                                } else {
+                                    selectedMesas + mesa
+                                }
                             }
                         }
                     )
@@ -118,6 +128,7 @@ fun MesasScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MesaCard(
     mesa: Mesa,
@@ -140,9 +151,11 @@ fun MesaCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = mesa.status == MesaStatus.LIVRE) { onCardClick() }
-            .background(backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .combinedClickable(
+                onClick = onCardClick,
+                onLongClick = onLongClick
+            ),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
             modifier = Modifier
@@ -151,14 +164,14 @@ fun MesaCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Mesa ${mesa.numero}",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
+
                 Text(
                     text = statusText,
                     fontSize = 14.sp,
@@ -166,15 +179,15 @@ fun MesaCard(
                 )
             }
 
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
+            Column(horizontalAlignment = Alignment.End) {
+
                 if (mesa.quantidadePessoas > 0) {
                     Text(
                         text = "👥 ${mesa.quantidadePessoas}",
                         fontSize = 14.sp
                     )
                 }
+
                 if (mesa.valorTotal > 0) {
                     Text(
                         text = "R$ ${String.format("%.2f", mesa.valorTotal)}",
@@ -188,6 +201,7 @@ fun MesaCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AbrirMesaDialog(
     mesa: Mesa,

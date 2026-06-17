@@ -1,3 +1,3 @@
-package com.example.mesafacil.data.repository
+package com.example.mesafacil.data.repositories
 
 class ClienteRepository

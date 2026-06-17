@@ -25,9 +25,10 @@ class PedidoViewModel : ViewModel() {
 
     fun loadPedidosByMesa(mesaId: String) {
         viewModelScope.launch {
-            pedidoRepository.getPedidosByMesa(mesaId).collectLatest { pedidos ->
-                _pedidos.value = pedidos
-            }
+            pedidoRepository.getPedidosByMesa(mesaId)
+                .collect { lista ->
+                    _pedidos.value = lista
+                }
         }
     }
 
@@ -41,30 +42,47 @@ class PedidoViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             _loading.value = true
-            val result = pedidoRepository.createPedido(
-                mesaId, numeroMesa, itens, observacoes, garcomId, garcomNome
+            val pedido = Pedido(
+                mesaId = mesaId,
+                numeroMesa = numeroMesa,
+                itens = itens,
+                observacoes = observacoes,
+                garcomId = garcomId,
+                garcomNome = garcomNome,
+                valorTotal = itens.sumOf { it.valorTotal() }
             )
-            result.onFailure { error ->
-                _error.value = error.message
+
+            try {
+                pedidoRepository.createPedido(pedido)
+            } catch (e: Exception) {
+                _error.value = e.message
             }
             _loading.value = false
         }
     }
 
-    fun atualizarStatusPedido(pedidoId: String, status: PedidoStatus) {
+    fun atualizarStatusPedido(
+        pedidoId: String,
+        status: PedidoStatus
+    ) {
         viewModelScope.launch {
-            val result = pedidoRepository.updatePedidoStatus(pedidoId, status)
-            result.onFailure { error ->
-                _error.value = error.message
+            try {
+                pedidoRepository.updatePedidoStatus(
+                    pedidoId,
+                    status
+                )
+            } catch (e: Exception) {
+                _error.value = e.message
             }
         }
     }
 
     fun deletarPedido(pedidoId: String) {
         viewModelScope.launch {
-            val result = pedidoRepository.deletePedido(pedidoId)
-            result.onFailure { error ->
-                _error.value = error.message
+            try {
+                pedidoRepository.deletePedido(pedidoId)
+            } catch (e: Exception) {
+                _error.value = e.message
             }
         }
     }

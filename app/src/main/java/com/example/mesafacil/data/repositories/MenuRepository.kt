@@ -5,7 +5,9 @@ import com.example.mesafacil.data.models.MenuItem
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
 
 class MenuRepository {
     private val firestore = FirebaseFirestore.getInstance()
@@ -13,41 +15,30 @@ class MenuRepository {
     private val adicionaisCollection = firestore.collection("adicionais")
 
     // Listar itens do menu por categoria
-    fun getMenuByCategoria(categoria: String): Flow<List<MenuItem>> = flow {
-        try {
-            menuCollection
-                .whereEqualTo("categoria", categoria)
-                .whereEqualTo("disponivel", true)
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) return@addSnapshotListener
-                    val items = snapshot?.toObjects(MenuItem::class.java) ?: emptyList()
-                    try {
-                        emit(items.sortedBy { it.nome })
-                    } catch (e: Exception) {
-                        // Emit error
-                    }
-                }
-        } catch (e: Exception) {
-            emit(emptyList())
-        }
+    suspend fun getMenu(): List<MenuItem> {
+        return menuCollection.get().await().toObjects(MenuItem::class.java)
     }
 
     // Listar todos os adicionais
-    fun getAllAdicionais(): Flow<List<Adicional>> = flow {
-        try {
-            adicionaisCollection
-                .whereEqualTo("disponivel", true)
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) return@addSnapshotListener
-                    val adicionais = snapshot?.toObjects(Adicional::class.java) ?: emptyList()
-                    try {
-                        emit(adicionais.sortedBy { it.nome })
-                    } catch (e: Exception) {
-                        // Emit error
-                    }
+    fun getAllAdicionais(): Flow<List<Adicional>> = callbackFlow {
+        val listener = adicionaisCollection
+            .whereEqualTo("disponivel", true)
+            .addSnapshotListener { snapshot, error ->
+
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
                 }
-        } catch (e: Exception) {
-            emit(emptyList())
+
+                val adicionais = snapshot?.documents?.mapNotNull {
+                    it.toObject(Adicional::class.java)
+                } ?: emptyList()
+
+                trySend(adicionais.sortedBy { it.nome })
+            }
+
+        awaitClose {
+            listener.remove()
         }
     }
 

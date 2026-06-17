@@ -12,13 +12,14 @@ data class Mesa(
     val valorTotal: Double = 0.0,
     val garcomId: String = "",
     val garcomNome: String = "",
-    val mesasUnidas: List<Int> = emptyList(), // para mesas unidas
+    val mesasUnidas: List<String> = emptyList(),
+    val mesaPrincipal: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) : Serializable
 
 enum class MesaStatus {
-    LIVRE,      // 🟢 Disponível
-    OCUPADA,    // 🔴 Com atendimento
-    RESERVADA   // 🟡 Reservada
+    LIVRE,
+    OCUPADA,
+    RESERVADA
 }

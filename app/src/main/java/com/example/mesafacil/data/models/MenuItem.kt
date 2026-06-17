@@ -15,12 +15,3 @@ data class MenuItem(
     val adicionaisDisponiveis: List<String> = emptyList(),
     val createdAt: Long = System.currentTimeMillis()
 ) : Serializable
-
-data class Adicional(
-    @DocumentId
-    val id: String = "",
-    val nome: String = "",
-    val valor: Double = 0.0,
-    val disponivel: Boolean = true,
-    val createdAt: Long = System.currentTimeMillis()
-) : Serializable

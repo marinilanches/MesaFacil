@@ -33,13 +33,24 @@ class MesaViewModel : ViewModel() {
         }
     }
 
-    fun abrirMesa(mesaId: String, quantidadePessoas: Int, garcomId: String, garcomNome: String) {
+    fun abrirMesa(
+        mesaId: String,
+        quantidadePessoas: Int,
+        garcomId: String,
+        garcomNome: String
+    ) {
         viewModelScope.launch {
             _loading.value = true
-            val result = mesaRepository.abrirMesa(mesaId, quantidadePessoas, garcomId, garcomNome)
-            result.onFailure { error ->
-                _error.value = error.message
+
+            try {
+                mesaRepository.abrirMesa(
+                    mesaId,
+                    quantidadePessoas
+                )
+            } catch (e: Exception) {
+                _error.value = e.message
             }
+
             _loading.value = false
         }
     }
@@ -47,21 +58,33 @@ class MesaViewModel : ViewModel() {
     fun fecharMesa(mesaId: String) {
         viewModelScope.launch {
             _loading.value = true
-            val result = mesaRepository.fecharMesa(mesaId)
-            result.onFailure { error ->
-                _error.value = error.message
+            try {
+                mesaRepository.fecharMesa(mesaId)
+            } catch (e: Exception) {
+                _error.value = e.message
             }
             _loading.value = false
         }
     }
 
-    fun unirMesas(mesaIds: List<String>, garcomId: String, garcomNome: String) {
+    fun unirMesas(
+        mesaIds: List<String>,
+        garcomId: String,
+        garcomNome: String
+    ) {
         viewModelScope.launch {
             _loading.value = true
-            val result = mesaRepository.unirMesas(mesaIds, garcomId, garcomNome)
-            result.onFailure { error ->
-                _error.value = error.message
+
+            try {
+                mesaRepository.unirMesas(
+                    mesaIds,
+                    garcomId,
+                    garcomNome
+                )
+            } catch (e: Exception) {
+                _error.value = e.message
             }
+
             _loading.value = false
         }
     }

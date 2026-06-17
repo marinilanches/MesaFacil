@@ -19,11 +19,11 @@ data class Pedido(
 ) : Serializable
 
 enum class PedidoStatus {
-    NOVO,        // Novo pedido
-    EM_PREPARO,  // Sendo preparado
-    PRONTO,      // Pronto para entregar
-    ENTREGUE,    // Entregue ao cliente
-    CANCELADO    // Cancelado
+    NOVO,
+    EM_PREPARO,
+    PRONTO,
+    ENTREGUE,
+    CANCELADO
 }
 
 data class ItemPedido(
@@ -32,17 +32,16 @@ data class ItemPedido(
     val categoria: String = "",
     val quantidade: Int = 1,
     val valorUnitario: Double = 0.0,
-    val adicionais: List<Adicional> = emptyList(),
+
+    // ⚠️ troquei para lista simples de nomes (evita crash no Firestore)
+    val adicionais: List<String> = emptyList(),
+
+    val valorAdicionalUnitario: Double = 0.0,
     val observacoes: String = ""
 ) : Serializable {
+
     fun valorTotal(): Double {
-        val valorAdicionais = adicionais.sumOf { it.valor }
-        return (valorUnitario + valorAdicionais) * quantidade
+        val valorBase = valorUnitario + valorAdicionalUnitario
+        return valorBase * quantidade
     }
 }
-
-data class Adicional(
-    val id: String = "",
-    val nome: String = "",
-    val valor: Double = 0.0
-) : Serializable
