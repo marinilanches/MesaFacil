@@ -24,13 +24,16 @@ class AuthViewModel : ViewModel() {
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
+
             val result = authRepository.login(email, password)
+
             result.onSuccess { user ->
                 _currentUser.value = user
                 _authState.value = AuthState.Success
             }
-            result.onFailure { error ->
-                _authState.value = AuthState.Error(error.message ?: "Erro desconhecido")
+
+            result.onFailure {
+                _authState.value = AuthState.Error(it.message ?: "Erro")
             }
         }
     }
@@ -56,6 +59,32 @@ class AuthViewModel : ViewModel() {
     fun isUserLoggedIn(): Boolean = authRepository.isUserLoggedIn()
 
     fun getCurrentUserId(): String? = authRepository.getCurrentUserId()
+
+    fun register(email: String, password: String, name: String, role: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+
+            val result = authRepository.register(email, password)
+
+            result.onSuccess { uid ->
+
+                val user = User(
+                    id = uid,
+                    email = email,
+                    name = name,
+                    role = role,
+                    isActive = true
+                )
+
+                _currentUser.value = user
+                _authState.value = AuthState.Success
+            }
+
+            result.onFailure { error ->
+                _authState.value = AuthState.Error(error.message ?: "Erro desconhecido")
+            }
+        }
+    }
 }
 
 sealed class AuthState {

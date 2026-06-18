@@ -10,36 +10,41 @@ import kotlinx.coroutines.tasks.await
 
 class MesaRepository {
 
-    private val db = FirebaseFirestore.getInstance()
-    private val collection = db.collection("mesas")
+    private val collection = FirebaseFirestore.getInstance().collection("mesas")
 
-    fun getAllMesas(): Flow<List<Mesa>> = callbackFlow {
-        val listener = collection.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                close(error)
-                return@addSnapshotListener
-            }
-
-            val mesas = snapshot?.toObjects(Mesa::class.java) ?: emptyList()
-            trySend(mesas)
-        }
-
-        awaitClose { listener.remove() }
-    }
-
-    suspend fun abrirMesa(id: String, pessoas: Int) {
-        collection.document(id).update(
+    suspend fun atualizarMesa(
+        mesaId: String,
+        status: String,
+        pessoas: Int
+    ) {
+        collection.document(mesaId).update(
             mapOf(
-                "status" to MesaStatus.OCUPADA,
+                "status" to MesaStatus.OCUPADA.name,
                 "quantidadePessoas" to pessoas
             )
         ).await()
     }
 
-    suspend fun fecharMesa(id: String) {
-        collection.document(id).update(
+    suspend fun abrirMesa(
+        mesaId: String,
+        pessoas: Int,
+        garcomId: String,
+        garcomNome: String
+    ) {
+        collection.document(mesaId).update(
             mapOf(
-                "status" to MesaStatus.LIVRE,
+                "status" to MesaStatus.OCUPADA.name,
+                "quantidadePessoas" to pessoas,
+                "garcomId" to garcomId,
+                "garcomNome" to garcomNome
+            )
+        ).await()
+    }
+
+    suspend fun fecharMesa(mesaId: String) {
+        collection.document(mesaId).update(
+            mapOf(
+                "status" to "LIVRE",
                 "quantidadePessoas" to 0,
                 "valorTotal" to 0.0
             )
@@ -47,29 +52,45 @@ class MesaRepository {
     }
 
     suspend fun unirMesas(
-        mesaIds: List<String>,
+        mesasIds: List<String>,
         garcomId: String,
         garcomNome: String
     ) {
-        if (mesaIds.isEmpty()) return
+        val batch = FirebaseFirestore.getInstance().batch()
 
-        val batch = db.batch()
-
-        mesaIds.forEach { mesaId ->
-            val docRef = collection.document(mesaId)
+        mesasIds.forEach { id ->
+            val ref = collection.document(id)
 
             batch.update(
-                docRef,
+                ref,
                 mapOf(
-                    "status" to MesaStatus.OCUPADA,
+                    "status" to MesaStatus.OCUPADA.name,
                     "garcomId" to garcomId,
-                    "garcomNome" to garcomNome,
-                    "mesaPrincipal" to mesaIds.first(),
-                    "mesasUnidas" to mesaIds
+                    "garcomNome" to garcomNome
                 )
             )
         }
 
         batch.commit().await()
+    }
+
+    fun getAllMesas(): Flow<List<Mesa>> = callbackFlow {
+
+        val listener = collection
+            .addSnapshotListener { snapshot, error ->
+
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val mesas = snapshot
+                    ?.toObjects(Mesa::class.java)
+                    ?: emptyList()
+
+                trySend(mesas)
+            }
+
+        awaitClose { listener.remove() }
     }
 }

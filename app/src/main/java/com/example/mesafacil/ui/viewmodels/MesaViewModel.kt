@@ -41,11 +41,14 @@ class MesaViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             _loading.value = true
+            _error.value = null
 
             try {
                 mesaRepository.abrirMesa(
                     mesaId,
-                    quantidadePessoas
+                    quantidadePessoas,
+                    garcomId,
+                    garcomNome
                 )
             } catch (e: Exception) {
                 _error.value = e.message
@@ -58,11 +61,14 @@ class MesaViewModel : ViewModel() {
     fun fecharMesa(mesaId: String) {
         viewModelScope.launch {
             _loading.value = true
+            _error.value = null
+
             try {
                 mesaRepository.fecharMesa(mesaId)
             } catch (e: Exception) {
                 _error.value = e.message
             }
+
             _loading.value = false
         }
     }
@@ -74,6 +80,7 @@ class MesaViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             _loading.value = true
+            _error.value = null
 
             try {
                 mesaRepository.unirMesas(
@@ -86,6 +93,12 @@ class MesaViewModel : ViewModel() {
             }
 
             _loading.value = false
+        }
+    }
+
+    fun getAllMesas() {
+        viewModelScope.launch {
+            mesaRepository.getAllMesas()
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.mesafacil.data.models
 
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.Timestamp
 import java.io.Serializable
 
 data class User(
@@ -8,8 +9,8 @@ data class User(
     val id: String = "",
     val email: String = "",
     val name: String = "",
-    val role: String = "waiter", // waiter, admin
+    val role: String = "waiter",
     val isActive: Boolean = true,
-    val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val createdAt: Timestamp = Timestamp.now(),
+    val updatedAt: Timestamp = Timestamp.now()
 ) : Serializable

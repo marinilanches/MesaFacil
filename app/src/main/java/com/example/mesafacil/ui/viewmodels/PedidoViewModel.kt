@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mesafacil.data.models.ItemPedido
 import com.example.mesafacil.data.models.Pedido
-import com.example.mesafacil.data.models.PedidoStatus
+import com.example.mesafacil.data.models.StatusPedido
 import com.example.mesafacil.data.repositories.PedidoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class PedidoViewModel : ViewModel() {
+
     private val pedidoRepository = PedidoRepository()
 
     private val _pedidos = MutableStateFlow<List<Pedido>>(emptyList())
@@ -23,10 +24,15 @@ class PedidoViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private var pedidosJob: kotlinx.coroutines.Job? = null
+
     fun loadPedidosByMesa(mesaId: String) {
-        viewModelScope.launch {
+
+        pedidosJob?.cancel()
+
+        pedidosJob = viewModelScope.launch {
             pedidoRepository.getPedidosByMesa(mesaId)
-                .collect { lista ->
+                .collectLatest { lista ->
                     _pedidos.value = lista
                 }
         }
@@ -42,35 +48,42 @@ class PedidoViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             _loading.value = true
-            val pedido = Pedido(
-                mesaId = mesaId,
-                numeroMesa = numeroMesa,
-                itens = itens,
-                observacoes = observacoes,
-                garcomId = garcomId,
-                garcomNome = garcomNome,
-                valorTotal = itens.sumOf { it.valorTotal() }
-            )
+            _error.value = null
 
             try {
+
+                val total = itens.sumOf { it.quantidade * it.valorUnitario }
+
+                val pedido = Pedido(
+                    mesaId = mesaId,
+                    numeroMesa = numeroMesa,
+                    itens = itens,
+                    observacoes = observacoes,
+                    garcomId = garcomId,
+                    garcomNome = garcomNome,
+                    valorTotal = total,
+                    status = StatusPedido.NOVO
+                )
+
                 pedidoRepository.createPedido(pedido)
+
             } catch (e: Exception) {
                 _error.value = e.message
             }
+
             _loading.value = false
         }
     }
 
     fun atualizarStatusPedido(
         pedidoId: String,
-        status: PedidoStatus
+        status: StatusPedido
     ) {
         viewModelScope.launch {
+            _error.value = null
+
             try {
-                pedidoRepository.updatePedidoStatus(
-                    pedidoId,
-                    status
-                )
+                pedidoRepository.updatePedidoStatus(pedidoId, status)
             } catch (e: Exception) {
                 _error.value = e.message
             }
@@ -79,6 +92,8 @@ class PedidoViewModel : ViewModel() {
 
     fun deletarPedido(pedidoId: String) {
         viewModelScope.launch {
+            _error.value = null
+
             try {
                 pedidoRepository.deletePedido(pedidoId)
             } catch (e: Exception) {

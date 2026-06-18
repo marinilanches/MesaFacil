@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mesafacil.data.models.Pedido
-import com.example.mesafacil.data.models.PedidoStatus
+import com.example.mesafacil.data.models.StatusPedido
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,7 +23,7 @@ import java.util.*
 fun StatusPedidosScreen(
     numeroMesa: Int,
     pedidos: List<Pedido>,
-    onUpdateStatus: (pedidoId: String, status: PedidoStatus) -> Unit,
+    onUpdateStatus: (pedidoId: String, status: StatusPedido) -> Unit,
     onVoltar: () -> Unit
 ) {
     Scaffold(
@@ -58,7 +58,7 @@ fun StatusPedidosScreen(
 @Composable
 fun PedidoCard(
     pedido: Pedido,
-    onStatusChange: (PedidoStatus) -> Unit
+    onStatusChange: (StatusPedido) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -136,7 +136,7 @@ fun PedidoCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                PedidoStatus.values().forEach { status ->
+                StatusPedido.values().forEach { status ->
                     Button(
                         onClick = { onStatusChange(status) },
                         modifier = Modifier.weight(1f),
@@ -148,12 +148,12 @@ fun PedidoCard(
                         )
                     ) {
                         Text(
-                            text = when (status) {
-                                PedidoStatus.NOVO -> "Novo"
-                                PedidoStatus.EM_PREPARO -> "Prep"
-                                PedidoStatus.PRONTO -> "Pronto"
-                                PedidoStatus.ENTREGUE -> "Entregue"
-                                PedidoStatus.CANCELADO -> "Cancel"
+                            when (status) {
+                                StatusPedido.NOVO -> "Novo"
+                                StatusPedido.EM_PREPARO -> "Prep"
+                                StatusPedido.PRONTO -> "Pronto"
+                                StatusPedido.ENTREGUE -> "Entregue"
+                                StatusPedido.CANCELADO -> "Cancel"
                             },
                             fontSize = 10.sp
                         )

@@ -1,0 +1,30 @@
+[33mcommit 7c4072e9491aca0c7016540129e373b2372616ef[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Matheus <matheusgoncalves0418@gmail.com>
+Date:   Wed Jun 17 17:34:22 2026 -0300
+
+    Primeiro commit
+
+ app/build.gradle.kts                               |   6 [32m+[m[31m-[m
+ .../java/com/example/mesafacil/MainActivity.kt     | 540 [32m++++++++[m[31m-------------[m
+ .../java/com/example/mesafacil/data/model/Mesa.kt  |   6 [31m-[m
+ .../com/example/mesafacil/data/model/Pedido.kt     |   7 [31m-[m
+ .../com/example/mesafacil/data/models/Adicional.kt |  11 [32m+[m
+ .../com/example/mesafacil/data/models/MenuItem.kt  |  11 [32m+[m[31m-[m
+ .../java/com/example/mesafacil/data/models/Mesa.kt |  11 [32m+[m[31m-[m
+ .../com/example/mesafacil/data/models/Pedido.kt    |  29 [32m+[m[31m-[m
+ .../mesafacil/data/repositories/MenuRepository.kt  |  53 [32m+[m[31m-[m
+ .../mesafacil/data/repositories/MesaRepository.kt  | 156 [32m++[m[31m----[m
+ .../data/repositories/PedidoRepository.kt          | 148 [32m++[m[31m----[m
+ .../mesafacil/data/repository/ClienteRepository.kt |   2 [32m+[m[31m-[m
+ .../mesafacil/data/repository/PedidoRepository.kt  |  23 [31m-[m
+ .../example/mesafacil/ui/screens/MesasScreen.kt    |  40 [32m+[m[31m-[m
+ .../mesafacil/ui/screens/PagamentoScreen.kt        |   2 [32m+[m
+ .../example/mesafacil/ui/screens/PedidoScreen.kt   | 218 [32m++++[m[31m-----[m
+ .../mesafacil/ui/screens/StatusPedidosScreen.kt    |  11 [32m+[m[31m-[m
+ .../mesafacil/ui/viewmodels/MesaViewModel.kt       |  45 [32m+[m[31m-[m
+ .../mesafacil/ui/viewmodels/PedidoViewModel.kt     |  46 [32m+[m[31m-[m
+ .../com/example/mesafacil/utils/PrinterManager.kt  |  51 [32m+[m[31m-[m
+ .../example/mesafacil/viewmodel/MesaViewModel.kt   |   3 [31m-[m
+ .../example/mesafacil/viewmodel/PedidoViewModel.kt |  40 [31m--[m
+ gradle/libs.versions.toml                          |   2 [32m+[m[31m-[m
+ 23 files changed, 594 insertions(+), 867 deletions(-)

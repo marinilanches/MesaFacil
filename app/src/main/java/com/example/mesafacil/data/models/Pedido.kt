@@ -9,7 +9,7 @@ data class Pedido(
     val mesaId: String = "",
     val numeroMesa: Int = 0,
     val itens: List<ItemPedido> = emptyList(),
-    val status: PedidoStatus = PedidoStatus.NOVO,
+    val status: StatusPedido = StatusPedido.NOVO,
     val valorTotal: Double = 0.0,
     val observacoes: String = "",
     val garcomId: String = "",
@@ -18,30 +18,20 @@ data class Pedido(
     val updatedAt: Long = System.currentTimeMillis()
 ) : Serializable
 
-enum class PedidoStatus {
-    NOVO,
-    EM_PREPARO,
-    PRONTO,
-    ENTREGUE,
-    CANCELADO
-}
-
 data class ItemPedido(
     val id: String = "",
     val nome: String = "",
     val categoria: String = "",
     val quantidade: Int = 1,
     val valorUnitario: Double = 0.0,
-
-    // ⚠️ troquei para lista simples de nomes (evita crash no Firestore)
     val adicionais: List<String> = emptyList(),
-
     val valorAdicionalUnitario: Double = 0.0,
     val observacoes: String = ""
 ) : Serializable {
 
     fun valorTotal(): Double {
-        val valorBase = valorUnitario + valorAdicionalUnitario
-        return valorBase * quantidade
+        val base = valorUnitario * quantidade
+        val adicionaisTotal = valorAdicionalUnitario * quantidade
+        return base + adicionaisTotal
     }
 }

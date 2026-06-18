@@ -23,11 +23,23 @@ import com.example.mesafacil.data.models.PagamentoParcial
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PagamentoScreen(
-    pagamento: Pagamento,
+    pagamento: Pagamento?,
     onAdicionarPagamento: (valor: Double, forma: FormaPagamento) -> Unit,
     onFecharMesa: () -> Unit,
     onVoltar: () -> Unit
 ) {
+
+    if (pagamento == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Nenhum pagamento criado ainda")
+        }
+        return
+    }
+
+    val p = pagamento
     var valor by remember { mutableStateOf("") }
     var formaSelecionada by remember { mutableStateOf(FormaPagamento.DINHEIRO) }
     var showTrocoDialog by remember { mutableStateOf(false) }
@@ -35,7 +47,7 @@ fun PagamentoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Pagamento - Mesa ${pagamento.numeroMesa}") },
+                title = { Text("Pagamento - Mesa ${p.numeroMesa}") },
                 navigationIcon = {
                     IconButton(onClick = onVoltar) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
@@ -67,7 +79,7 @@ fun PagamentoScreen(
                 ) {
                     Text("TOTAL DA CONTA", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     Text(
-                        text = "R$ ${String.format("%.2f", pagamento.valorTotal)}",
+                        text = "R$ ${String.format("%.2f", p.valorTotal)}",
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -136,7 +148,7 @@ fun PagamentoScreen(
             }
 
             // Histórico de pagamentos
-            if (pagamento.pagamentos.isNotEmpty()) {
+            if (p.pagamentos.isNotEmpty()) {
                 Text(
                     text = "Histórico de Pagamentos",
                     fontWeight = FontWeight.Bold,
@@ -148,7 +160,7 @@ fun PagamentoScreen(
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    items(pagamento.pagamentos) { p ->
+                    items(p.pagamentos) { p ->
                         PagamentoParcialCard(p)
                     }
                 }

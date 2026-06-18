@@ -1,4 +1,4 @@
-package com.example.mesafacil.data.model
+package com.example.mesafacil.data.models
 
 data class Cliente(
     val nome: String = "",

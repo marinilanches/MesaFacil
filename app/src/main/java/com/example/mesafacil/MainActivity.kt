@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
@@ -23,6 +24,8 @@ import com.example.mesafacil.ui.viewmodels.*
 import com.example.mesafacil.utils.FirebaseInitializer
 import com.example.mesafacil.utils.LoggerUtil
 import com.example.mesafacil.utils.PrinterManager
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -43,8 +46,16 @@ class MainActivity : ComponentActivity() {
         ViewModelProvider(this)[PagamentoViewModel::class.java]
     }
 
+    private val collection =FirebaseFirestore.getInstance().collection("mesas")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        criarMesasIniciais()
+
+        FirebaseFirestore.getInstance()
+            .collection("teste")
+            .add(mapOf("mensagem" to "Firebase OK"))
 
         FirebaseInitializer.initialize(this)
         LoggerUtil.i("MainActivity iniciada")
@@ -87,10 +98,10 @@ fun OpcoesMesaScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mesa ${mesa.numero}") },
+                title = { Text("Mesa ${mesa.id}") },
                 navigationIcon = {
                     IconButton(onClick = onVoltar) {
-                        Icon(Icons.Default.ArrowBack, null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                     }
                 }
             )
@@ -109,7 +120,7 @@ fun OpcoesMesaScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Mesa ${mesa.numero}", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Text("Mesa ${mesa.id}", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     Text("${mesa.quantidadePessoas} pessoas | R$ ${mesa.valorTotal}")
                 }
             }
@@ -193,9 +204,9 @@ fun AppContent(
                                 currentUser!!.name
                             )
                         },
-                        onUnirMesas = {
+                        onUnirMesas = { mesasSelecionadas ->
                             mesaViewModel.unirMesas(
-                                it.map { m -> m.id },
+                                mesasSelecionadas.map { it.id },
                                 currentUser!!.id,
                                 currentUser!!.name
                             )
@@ -231,6 +242,8 @@ fun AppContent(
                             onAdicionarItem = {},
                             onEnviarPedido = { itens, obs ->
 
+                                println("ENVIANDO PEDIDO") // 🔥 AQUI
+
                                 pedidoViewModel.criarPedido(
                                     mesaId = mesa.id,
                                     numeroMesa = mesa.numero,
@@ -241,6 +254,7 @@ fun AppContent(
                                 )
 
                                 currentScreen = Screen.Opcoes
+                                println("PEDIDO ENVIADO PARA MESA: ${mesa.id}")
                             },
                             onVoltar = { currentScreen = Screen.Opcoes }
                         )
@@ -284,5 +298,32 @@ fun AppContent(
             isLoading = authState is AuthState.Loading,
             errorMessage = (authState as? AuthState.Error)?.message
         )
+    }
+}
+
+fun criarMesasIniciais() {
+    val db = FirebaseFirestore.getInstance()
+    val collection = db.collection("mesas")
+
+    val mesas = listOf(1, 2, 3, 4)
+
+    collection.get().addOnSuccessListener { snapshot ->
+
+        // 🔥 se já existe mesa, não cria de novo
+        if (!snapshot.isEmpty) return@addOnSuccessListener
+
+        mesas.forEach { numero ->
+
+            val mesa = mapOf(
+                "id" to numero.toString(),
+                "numero" to numero,
+                "status" to "LIVRE",
+                "quantidadePessoas" to 0,
+                "valorTotal" to 0.0
+            )
+
+            collection.document(numero.toString())
+                .set(mesa)
+        }
     }
 }
