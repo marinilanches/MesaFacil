@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
         ViewModelProvider(this)[PagamentoViewModel::class.java]
     }
 
-    private val collection =FirebaseFirestore.getInstance().collection("mesas")
+    private val collection = FirebaseFirestore.getInstance().collection("mesas")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,6 +123,7 @@ fun OpcoesMesaScreen(
             ) {
                 Column(Modifier.padding(16.dp)) {
                     Text("Mesa ${mesa.id}", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    println("Mesa valorTotal = ${mesa.valorTotal}")
                     Text("${mesa.quantidadePessoas} pessoas | R$ ${mesa.valorTotal}")
                 }
             }
@@ -260,127 +261,165 @@ fun AppContent(
                         }
                     )
 
-                    Screen.Opcoes -> selectedMesa?.let { mesa ->
-                        OpcoesMesaScreen(
-                            mesa = mesa,
-                            onNovoPedido = { currentScreen = Screen.Pedido },
-                            onVerPedidos = { currentScreen = Screen.Status },
-                            onPagamento = {
-                                pagamentoViewModel.carregarPagamento(mesa.id)
-                                currentScreen = Screen.Pagamento
-                            },
-                            onLiberarMesa = {
-                                mesaViewModel.fecharMesa(mesa.id)
-                                selectedMesa = null
-                                currentScreen = Screen.Mesas
-                            },
-                            onVoltar = {
-                                currentScreen = Screen.Mesas
-                                selectedMesa = null
-                            }
-                        )
-                    }
+                    Screen.Opcoes -> {
 
-                    Screen.Pedido -> selectedMesa?.let { mesa ->
-                        PedidoScreen(
-                            mesa = mesa,
-                            pedidos = pedidos,
-                            menuItems = menuItems,
-                            adicionais = adicionais,
-                            onAdicionarItem = {},
-                            onEnviarPedido = { itens, obs ->
+                        val mesaAtual = mesas.firstOrNull {
+                            it.id == selectedMesa?.id
+                        }
 
-                                println("ENVIANDO PEDIDO") // 🔥 AQUI
+                        mesaAtual?.let { mesa ->
+                            OpcoesMesaScreen(
+                                mesa = mesa,
+                                onNovoPedido = { currentScreen = Screen.Pedido },
+                                onVerPedidos = { currentScreen = Screen.Status },
+                                onPagamento = {
 
-                                pedidoViewModel.criarPedido(
-                                    mesaId = mesa.id,
-                                    numeroMesa = mesa.numero,
-                                    itens = itens,
-                                    observacoes = obs,
-                                    garcomId = currentUser!!.id,
-                                    garcomNome = currentUser!!.name
-                                )
+                                    pagamentoViewModel.carregarOuCriarPagamento(
+                                        mesaId = mesa.id,
+                                        numeroMesa = mesa.numero,
+                                        quantidadePessoas = mesa.quantidadePessoas,
+                                        garcomId = currentUser!!.id
+                                    )
 
-                                currentScreen = Screen.Opcoes
-                                println("PEDIDO ENVIADO PARA MESA: ${mesa.id}")
-                            },
-                            onVoltar = { currentScreen = Screen.Opcoes }
-                        )
-                    }
-
-                    Screen.Status -> selectedMesa?.let {
-                        StatusPedidosScreen(
-                            numeroMesa = it.numero,
-                            pedidos = pedidos,
-                            onUpdateStatus = { id, status ->
-                                pedidoViewModel.atualizarStatusPedido(id, status)
-                            },
-                            onVoltar = { currentScreen = Screen.Opcoes }
-                        )
-                    }
-
-                    Screen.Pagamento -> selectedMesa?.let { mesa ->
-                        pagamento?.let { pag ->
-                            PagamentoScreen(
-                                pagamento = pag,
-                                onAdicionarPagamento = { v, f ->
-                                    pagamentoViewModel.adicionarPagamento(v, f)
-                                },
-                                onFecharMesa = {
-                                    PrinterManager.printRecibo(pag)
-                                    mesaViewModel.liberarGrupoMesa(mesa)
-
-                                    selectedMesa = null
-                                    currentScreen = Screen.Mesas
+                                    currentScreen = Screen.Pagamento
                                 },
                                 onLiberarMesa = {
-                                    mesaViewModel.liberarGrupoMesa(mesa)
-
+                                    mesaViewModel.fecharMesa(mesa.id)
                                     selectedMesa = null
                                     currentScreen = Screen.Mesas
                                 },
                                 onVoltar = {
-                                    currentScreen = Screen.Opcoes
+                                    currentScreen = Screen.Mesas
+                                    selectedMesa = null
                                 }
                             )
                         }
                     }
+
+                    Screen.Pedido -> {
+
+                        val mesaAtual = mesas.firstOrNull {
+                            it.id == selectedMesa?.id
+                        }
+
+                        mesaAtual?.let { mesa ->
+                            PedidoScreen(
+                                mesa = mesa,
+                                pedidos = pedidos,
+                                menuItems = menuItems,
+                                adicionais = adicionais,
+                                onAdicionarItem = {},
+                                onEnviarPedido = { itens, obs ->
+
+                                    println("ENVIANDO PEDIDO") // 🔥 AQUI
+
+                                    pedidoViewModel.criarPedido(
+                                        mesaId = mesa.id,
+                                        numeroMesa = mesa.numero,
+                                        itens = itens,
+                                        observacoes = obs,
+                                        garcomId = currentUser!!.id,
+                                        garcomNome = currentUser!!.name
+                                    )
+
+                                    currentScreen = Screen.Opcoes
+                                    println("PEDIDO ENVIADO PARA MESA: ${mesa.id}")
+                                },
+                                onVoltar = { currentScreen = Screen.Opcoes }
+                            )
+                        }
+                    }
+
+                    Screen.Status -> {
+
+                        val mesaAtual = mesas.firstOrNull {
+                            it.id == selectedMesa?.id
+                        }
+
+                        mesaAtual?.let {
+                            StatusPedidosScreen(
+                                numeroMesa = it.numero,
+                                pedidos = pedidos,
+                                onUpdateStatus = { id, status ->
+                                    pedidoViewModel.atualizarStatusPedido(id, status)
+                                },
+                                onVoltar = { currentScreen = Screen.Opcoes }
+                            )
+                        }
+                    }
+
+                    Screen.Pagamento -> {
+
+                        val mesaAtual = mesas.firstOrNull {
+                            it.id == selectedMesa?.id
+                        }
+
+                        mesaAtual?.let { mesa ->
+
+                            // 🔥 AQUI É O LUGAR CERTO
+                            pagamentoViewModel.observarTotalMesa(pedidoViewModel.pedidos)
+
+                            pagamento?.let { pag ->
+                                PagamentoScreen(
+                                    pagamento = pag,
+                                    onAdicionarPagamento = { v, f ->
+                                        pagamentoViewModel.adicionarPagamento(v, f)
+                                    },
+                                    onFecharMesa = {
+                                        PrinterManager.printRecibo(pag)
+                                        mesaViewModel.liberarGrupoMesa(mesa)
+
+                                        selectedMesa = null
+                                        currentScreen = Screen.Mesas
+                                    },
+                                    onLiberarMesa = {
+                                        mesaViewModel.fecharMesa(mesa.id)
+                                        selectedMesa = null
+                                        currentScreen = Screen.Mesas
+                                    },
+                                    onVoltar = {
+                                        currentScreen = Screen.Opcoes
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    }
                 }
             }
-        }
 
-        else -> LoginScreen(
+            else -> LoginScreen(
             onLoginSuccess = { currentScreen = Screen.Mesas },
             onLogin = { email, pass -> authViewModel.login(email, pass) },
             isLoading = authState is AuthState.Loading,
             errorMessage = (authState as? AuthState.Error)?.message
-        )
-    }
-}
-
-fun criarMesasIniciais() {
-    val db = FirebaseFirestore.getInstance()
-    val collection = db.collection("mesas")
-
-    val mesas = listOf(1, 2, 3, 4)
-
-    collection.get().addOnSuccessListener { snapshot ->
-
-        // 🔥 se já existe mesa, não cria de novo
-        if (!snapshot.isEmpty) return@addOnSuccessListener
-
-        mesas.forEach { numero ->
-
-            val mesa = mapOf(
-                "id" to numero.toString(),
-                "numero" to numero,
-                "status" to "LIVRE",
-                "quantidadePessoas" to 0,
-                "valorTotal" to 0.0
             )
-
-            collection.document(numero.toString())
-                .set(mesa)
         }
     }
-}
+
+    fun criarMesasIniciais() {
+        val db = FirebaseFirestore.getInstance()
+        val collection = db.collection("mesas")
+
+        val mesas = listOf(1, 2, 3, 4)
+
+        collection.get().addOnSuccessListener { snapshot ->
+
+            // 🔥 se já existe mesa, não cria de novo
+            if (!snapshot.isEmpty) return@addOnSuccessListener
+
+            mesas.forEach { numero ->
+
+                val mesa = mapOf(
+                    "id" to numero.toString(),
+                    "numero" to numero,
+                    "status" to "LIVRE",
+                    "quantidadePessoas" to 0,
+                    "valorTotal" to 0.0
+                )
+
+                collection.document(numero.toString())
+                    .set(mesa)
+            }
+        }
+    }

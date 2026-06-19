@@ -5,6 +5,7 @@ import com.example.mesafacil.data.models.Pagamento
 import com.example.mesafacil.data.models.PagamentoParcial
 import com.example.mesafacil.data.models.PagamentoStatus
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 class PagamentoRepository {
@@ -30,6 +31,8 @@ class PagamentoRepository {
             garcomId = garcomId,
             createdAt = System.currentTimeMillis()
         )
+
+        println("PAGAMENTO QUE VAI PARA FIRESTORE = $pagamento")
         val doc = collection.add(pagamento).await()
         Result.success(pagamento.copy(id = doc.id))
     } catch (e: Exception) {
@@ -38,13 +41,26 @@ class PagamentoRepository {
 
     // Obter pagamento por mesa
     suspend fun getPagamentoByMesa(mesaId: String): Pagamento? = try {
+
         val snapshot = collection
             .whereEqualTo("mesaId", mesaId)
-            .whereNotEqualTo("status", PagamentoStatus.COMPLETO)
             .get()
             .await()
-        snapshot.documents.firstOrNull()?.toObject(Pagamento::class.java)
+
+        println("DOCUMENTOS ENCONTRADOS = ${snapshot.documents.size}")
+
+        val pagamentos = snapshot.documents
+            .mapNotNull { it.toObject(Pagamento::class.java) }
+
+        println("PAGAMENTOS ENCONTRADOS = $pagamentos")
+
+        pagamentos.firstOrNull {
+            it.status == PagamentoStatus.PENDENTE ||
+                    it.status == PagamentoStatus.PARCIAL
+        }
+
     } catch (e: Exception) {
+        e.printStackTrace()
         null
     }
 
@@ -110,11 +126,28 @@ class PagamentoRepository {
     }
 
     // Atualizar pagamento
-    suspend fun updatePagamento(pagamento: Pagamento): Result<Unit> = try {
-        collection.document(pagamento.id).set(pagamento).await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+    suspend fun updatePagamentoTotal(
+        pagamentoId: String,
+        valorTotal: Double
+    ) {
+        FirebaseFirestore.getInstance()
+            .collection("pagamentos")
+            .document(pagamentoId)
+            .update("valorTotal", valorTotal)
+            .await()
+    }
+
+    suspend fun updatePagamento(pagamento: Pagamento): Result<Unit> {
+        return try {
+            collection
+                .document(pagamento.id)
+                .set(pagamento, com.google.firebase.firestore.SetOptions.merge())
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     // Cancelar pagamento
