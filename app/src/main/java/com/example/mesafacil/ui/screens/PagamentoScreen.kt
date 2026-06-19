@@ -26,6 +26,7 @@ fun PagamentoScreen(
     pagamento: Pagamento?,
     onAdicionarPagamento: (valor: Double, forma: FormaPagamento) -> Unit,
     onFecharMesa: () -> Unit,
+    onLiberarMesa: () -> Unit,
     onVoltar: () -> Unit
 ) {
 
@@ -256,6 +257,16 @@ fun PagamentoScreen(
                     enabled = pagamento.valorRestante() <= 0
                 ) {
                     Text("Fechar Mesa")
+                }
+
+                Button(
+                    onClick = onLiberarMesa,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Liberar Mesa")
                 }
             }
         }

@@ -8,7 +8,8 @@ data class Mesa(
     val numero: Int = 0,
     val status: MesaStatus = MesaStatus.LIVRE,
     val quantidadePessoas: Int = 0,
-    val valorTotal: Double = 0.0
+    val valorTotal: Double = 0.0,
+    val mesasUnidas: List<String> = emptyList()
 ) : Serializable
 
 enum class MesaStatus {

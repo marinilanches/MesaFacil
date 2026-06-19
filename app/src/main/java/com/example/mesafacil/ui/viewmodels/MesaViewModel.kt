@@ -101,4 +101,16 @@ class MesaViewModel : ViewModel() {
             mesaRepository.getAllMesas()
         }
     }
+
+    fun liberarMesa(mesaId: String) {
+        viewModelScope.launch {
+            mesaRepository.liberarMesa(mesaId)
+        }
+    }
+
+    fun liberarGrupoMesa(mesa: Mesa) {
+        viewModelScope.launch {
+            mesaRepository.liberarGrupoMesa(mesa)
+        }
+    }
 }

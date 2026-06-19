@@ -10,7 +10,8 @@ import kotlinx.coroutines.tasks.await
 
 class MesaRepository {
 
-    private val collection = FirebaseFirestore.getInstance().collection("mesas")
+    private val firestore = FirebaseFirestore.getInstance()
+    private val collection = firestore.collection("mesas")
 
     suspend fun atualizarMesa(
         mesaId: String,
@@ -59,6 +60,9 @@ class MesaRepository {
         val batch = FirebaseFirestore.getInstance().batch()
 
         mesasIds.forEach { id ->
+
+            val outrasMesas = mesasIds.filter { it != id }
+
             val ref = collection.document(id)
 
             batch.update(
@@ -66,7 +70,45 @@ class MesaRepository {
                 mapOf(
                     "status" to MesaStatus.OCUPADA.name,
                     "garcomId" to garcomId,
-                    "garcomNome" to garcomNome
+                    "garcomNome" to garcomNome,
+                    "mesasUnidas" to outrasMesas
+                )
+            )
+        }
+
+        batch.commit().await()
+    }
+
+    suspend fun liberarMesa(mesaId: String) {
+        firestore.collection("mesas")
+            .document(mesaId)
+            .update(
+                mapOf(
+                    "status" to MesaStatus.LIVRE,
+                    "quantidadePessoas" to 0,
+                    "valorTotal" to 0.0
+                )
+            )
+            .await()
+    }
+
+    suspend fun liberarGrupoMesa(mesa: Mesa) {
+
+        val batch = firestore.batch()
+
+        val ids = mesa.mesasUnidas + mesa.id
+
+        ids.forEach { id ->
+
+            val ref = collection.document(id)
+
+            batch.update(
+                ref,
+                mapOf(
+                    "status" to MesaStatus.LIVRE.name,
+                    "quantidadePessoas" to 0,
+                    "valorTotal" to 0.0,
+                    "mesasUnidas" to emptyList<String>()
                 )
             )
         }

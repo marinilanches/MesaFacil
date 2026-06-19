@@ -3,6 +3,7 @@ package com.example.mesafacil
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -93,6 +94,7 @@ fun OpcoesMesaScreen(
     onNovoPedido: () -> Unit,
     onVerPedidos: () -> Unit,
     onPagamento: () -> Unit,
+    onLiberarMesa: () -> Unit,
     onVoltar: () -> Unit
 ) {
     Scaffold(
@@ -144,6 +146,16 @@ fun OpcoesMesaScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Pagamento")
             }
+
+            Button(
+                onClick = onLiberarMesa,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Liberar Mesa")
+            }
         }
     }
 }
@@ -179,6 +191,37 @@ fun AppContent(
             Adicional("2", "Cheddar", 3.0),
             Adicional("3", "Ovo", 2.0)
         )
+    }
+
+    BackHandler {
+
+        when (currentScreen) {
+
+            Screen.Login -> {
+                // deixa o Android fechar o app
+            }
+
+            Screen.Mesas -> {
+                currentScreen = Screen.Login
+            }
+
+            Screen.Opcoes -> {
+                currentScreen = Screen.Mesas
+                selectedMesa = null
+            }
+
+            Screen.Pedido -> {
+                currentScreen = Screen.Opcoes
+            }
+
+            Screen.Status -> {
+                currentScreen = Screen.Opcoes
+            }
+
+            Screen.Pagamento -> {
+                currentScreen = Screen.Opcoes
+            }
+        }
     }
 
     when (authState) {
@@ -225,6 +268,11 @@ fun AppContent(
                             onPagamento = {
                                 pagamentoViewModel.carregarPagamento(mesa.id)
                                 currentScreen = Screen.Pagamento
+                            },
+                            onLiberarMesa = {
+                                mesaViewModel.fecharMesa(mesa.id)
+                                selectedMesa = null
+                                currentScreen = Screen.Mesas
                             },
                             onVoltar = {
                                 currentScreen = Screen.Mesas
@@ -280,11 +328,20 @@ fun AppContent(
                                 },
                                 onFecharMesa = {
                                     PrinterManager.printRecibo(pag)
-                                    mesaViewModel.fecharMesa(mesa.id)
+                                    mesaViewModel.liberarGrupoMesa(mesa)
+
                                     selectedMesa = null
                                     currentScreen = Screen.Mesas
                                 },
-                                onVoltar = { currentScreen = Screen.Opcoes }
+                                onLiberarMesa = {
+                                    mesaViewModel.liberarGrupoMesa(mesa)
+
+                                    selectedMesa = null
+                                    currentScreen = Screen.Mesas
+                                },
+                                onVoltar = {
+                                    currentScreen = Screen.Opcoes
+                                }
                             )
                         }
                     }
